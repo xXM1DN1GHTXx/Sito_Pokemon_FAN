@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokédex Simulator</title>
+    <!-- Modern Typography: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">PokéSim</div>
+        <ul class="nav-links">
+            <li><button class="nav-btn active" data-target="pokedex-view">Pokédex</button></li>
+            <li><button class="nav-btn" data-target="teams-view">Le tue Squadre</button></li>
+            <li><button class="nav-btn" data-target="league-view">Affronta la Lega</button></li>
+            <li><button class="nav-btn" data-target="tournament-view">Torneo Locale</button></li>
+            <li><button class="nav-btn" data-target="battle-view">Arena Lotta</button></li>
+        </ul>
+    </nav>
+
+    <div id="app">
+        <div id="loader" class="loader">
+            <div class="spinner"></div>
+            <p>Caricamento Pokédex e Mosse...</p>
+        </div>
+
+        <!-- POKEDEX VIEW -->
+        <main id="pokedex-view" class="view-section hidden">
+            <header>
+                <h1>Pokédex 151</h1>
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Cerca Pokémon by name...">
+                </div>
+            </header>
+            <div id="pokedex" class="pokemon-container"></div>
+        </main>
+
+        <!-- TEAMS VIEW -->
+        <main id="teams-view" class="view-section hidden">
+            <header>
+                <h1>Costruisci la tua Squadra</h1>
+                <p class="subtitle">Puoi creare più squadre. Usa il Pokédex per aggiungere membri (max 6).</p>
+            </header>
+            
+            <div class="team-builder">
+                 <div class="team-creation">
+                     <input type="text" id="new-team-name" placeholder="Nome Squadra (es. Team Rocket)">
+                     <button id="create-team-btn" class="action-btn">Crea Nuova Squadra</button>
+                 </div>
+                 <div id="teams-container" class="teams-grid"></div>
+            </div>
+        </main>
+
+        <!-- LEAGUE VIEW -->
+        <main id="league-view" class="view-section hidden">
+            <header>
+                <h1>Affronta la Lega Pokémon!</h1>
+                <p class="subtitle">Sconfiggi i Capipalestra e i Superquattro di Kanto (Giocatore Singolo)</p>
+            </header>
+            
+            <div id="league-setup" class="league-setup-container">
+                <div class="league-status">
+                    <h2>Prossimo Avversario: <span id="league-boss-name" style="color:var(--secondary-color)">...</span></h2>
+                    <p class="league-boss-desc" id="league-boss-desc">...</p>
+                    <div id="league-roster-preview" class="boss-roster-preview"></div>
+                </div>
+
+                <div class="league-controls card">
+                    <label>Scegli la squadra Sfidante:</label>
+                    <select id="league-team-select">
+                        <option value="">-- Seleziona o crea squadra --</option>
+                    </select>
+                    <button id="start-league-battle-btn" class="action-btn start-btn" disabled>AVVIA SFIDA!</button>
+                    <button id="reset-league-btn" class="nav-btn" style="margin-top:1.5rem; width:100%; font-size: 0.8rem; background: transparent; color: #aaa; border: 1px solid #444;">Azzera Campagna Lega</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- TOURNAMENT VIEW -->
+        <main id="tournament-view" class="view-section hidden">
+            <header>
+                <h1>Torneo Multigiocatore Locale</h1>
+                <p class="subtitle">Registra da 4 a 10 giocatori. Avverranno scontri a eliminazione diretta!</p>
+            </header>
+
+            <!-- Registration Phase -->
+            <div id="tourney-registration" class="tourney-panel card">
+                <h2>Iscrizioni Aperte (<span id="tourney-count">0</span>/10)</h2>
+                <div class="registration-form" style="display:flex; gap:1rem; margin-top:1rem; justify-content:center; flex-wrap:wrap;">
+                    <input type="text" id="tourney-player-name" placeholder="Nome Giocatore (es. Ash)" style="padding:0.8rem; background:rgba(0,0,0,0.5); color:white; border:1px solid var(--glass-border); border-radius:8px;">
+                    <select id="tourney-team-select" style="padding:0.8rem; background:rgba(0,0,0,0.5); color:white; border:1px solid var(--glass-border); border-radius:8px;">
+                        <option value="">-- Seleziona Squadra --</option>
+                    </select>
+                    <button id="add-tourney-player-btn" class="action-btn">Iscrivi</button>
+                </div>
+                <div id="tourney-players-list" class="players-list" style="margin-top:2rem; display:flex; flex-direction:column; gap:0.5rem; max-width:600px; margin-left:auto; margin-right:auto;"></div>
+                
+                <div style="text-align:center; padding-top:2rem;">
+                    <button id="start-tourney-btn" class="action-btn start-btn" disabled>GENERA TABELLONE E INIZIA</button>
+                </div>
+            </div>
+
+            <!-- Bracket Phase -->
+            <div id="tourney-bracket" class="tourney-panel hidden">
+                <div class="bracket-header" style="text-align:center; margin-bottom:2rem;">
+                    <h2 id="tourney-round-title" style="margin-bottom:1rem;">Tabellone Torneo</h2>
+                    <button id="play-next-match-btn" class="action-btn start-btn" style="background:#f39c12; color:#000;">GIOCA INCONTRO IN ATTESA</button>
+                </div>
+                
+                <div class="bracket-container" id="bracket-container">
+                    <!-- Tree visually auto-generated here -->
+                </div>
+                
+                <button id="abandon-tourney-btn" class="nav-btn" style="margin-top:2rem; border:1px solid #555; width:100%; color:#aaa; font-size:0.9rem;">Abbandona e Resetta Torneo</button>
+            </div>
+        </main>
+
+        <!-- BATTLE VIEW -->
+        <main id="battle-view" class="view-section hidden">
+            <header>
+                <h1>Arena di Combattimento</h1>
+            </header>
+            
+            <div id="battle-setup" class="battle-setup">
+                <h2>Seleziona i Contendenti</h2>
+                <div class="select-container">
+                    <div class="team-picker">
+                        <label>Giocatore 1 (G1)</label>
+                        <select id="team1-select">
+                            <option value="">-- Scegli --</option>
+                        </select>
+                    </div>
+                    <span class="vs-text">VS</span>
+                    <div class="team-picker">
+                        <label>Giocatore 2 (G2)</label>
+                        <select id="team2-select">
+                            <option value="">-- Scegli --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="order-container" class="team-order-container hidden">
+                    <div class="order-box">
+                        <h3>Ordine di uscita G1</h3>
+                        <ul id="t1-order-list"></ul>
+                    </div>
+                    <div class="order-box">
+                        <h3>Ordine di uscita G2</h3>
+                        <ul id="t2-order-list"></ul>
+                    </div>
+                </div>
+
+                <button id="start-battle-btn" class="action-btn start-btn" disabled>SCENDI IN CAMPO!</button>
+            </div>
+
+            <div id="battle-arena" class="battle-arena hidden">
+                
+                <!-- BATTLEFIELD -->
+                <div class="battlefield-bg">
+                    <!-- Top / Enemy Side -->
+                    <div class="battlefield enemy-side">
+                        <div class="pokemon-hud enemy-hud">
+                            <div class="hud-name" id="enemy-name">---</div>
+                            <div class="hud-hp-bar">
+                                <div class="hp-fill" id="enemy-hp-fill"></div>
+                            </div>
+                            <div class="hud-hp-text">HP: <span id="enemy-hp-current">0</span> / <span id="enemy-hp-max">0</span></div>
+                            <div class="hud-sp-bar" style="margin-top: 4px;">
+                                <div class="sp-fill" id="enemy-sp-fill"></div>
+                            </div>
+                            <div class="hud-sp-text">SP: <span id="enemy-sp-current">0</span> / <span id="enemy-sp-max">0</span></div>
+                        </div>
+                        <div class="pokemon-sprite-container enemy-sprite-pos">
+                            <img id="enemy-sprite" src="" class="battle-sprite" alt="">
+                        </div>
+                    </div>
+
+                    <!-- Bottom / Player Side -->
+                    <div class="battlefield player-side">
+                        <div class="pokemon-sprite-container player-sprite-pos">
+                            <img id="player-sprite" src="" class="battle-sprite player-back-sprite" alt="">
+                        </div>
+                        <div class="pokemon-hud player-hud">
+                            <div class="hud-name" id="player-name">---</div>
+                            <div class="hud-hp-bar">
+                                <div class="hp-fill" id="player-hp-fill"></div>
+                            </div>
+                            <div class="hud-hp-text">HP: <span id="player-hp-current">0</span> / <span id="player-hp-max">0</span></div>
+                            <div class="hud-sp-bar" style="margin-top: 4px;">
+                                <div class="sp-fill" id="player-sp-fill"></div>
+                            </div>
+                            <div class="hud-sp-text">SP: <span id="player-sp-current">0</span> / <span id="player-sp-max">0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Battle Log & Controls -->
+                <div class="battle-panel">
+                    <div id="battle-log" class="battle-log">La battaglia sta per cominciare...</div>
+                    <div id="battle-controls" class="battle-controls">
+                        <!-- Moves injected by JS -->
+                    </div>
+                </div>
+
+                <button id="end-battle-btn" class="action-btn hidden" style="margin-top: 1rem; width: 100%">Torna alla Setup</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for details -->
+    <div id="modal-backdrop" class="hidden">
+        <div id="pokemon-modal" class="modal">
+            <button id="close-btn">&times;</button>
+            <div id="modal-content"></div>
+            
+            <div class="add-to-team-controls">
+                <select id="modal-team-select" class="team-dropdown">
+                    <option value="">Nessuna squadra disponibile</option>
+                </select>
+                <button id="modal-add-btn" class="action-btn small-btn">Aggiungi a Squadra</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
